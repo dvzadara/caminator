@@ -160,4 +160,4 @@ cython_debug/
 .idea/
 
 # Directory for coding without push code to repository
-experiments/
+experiments/*
