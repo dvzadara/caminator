@@ -1,4 +1,4 @@
-from weights.onnx_prediction import detect_objects
+from onnx_model.onnx_prediction import detect_objects
 import cv2
 
 # model = YOLO('yolov8n.pt')

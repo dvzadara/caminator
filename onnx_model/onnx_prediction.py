@@ -5,7 +5,7 @@ import onnxruntime as rt
 from datetime import datetime
 import time
 
-def load_model(model_path=r"weights/yolov8n.onnx"):
+def load_model(model_path=r"weights/yolov8n.onnx_model"):
     # EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
     EP_list = ['CPUExecutionProvider']
 
@@ -25,10 +25,8 @@ def get_model_params(ort_session):
 
 input_width, input_height = (640, 640)
 
-ort_session = load_model()
+ort_session = load_model("weights/yolov8n.onnx")
 input_shape, input_names, output_names = get_model_params(ort_session)
-
-image_path = "../images/photo_2023-07-27_12-51-36.jpg"
 
 
 def image_to_input_tensor(image):
