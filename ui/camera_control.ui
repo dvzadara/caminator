@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>302</width>
-    <height>395</height>
+    <height>330</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -33,10 +33,11 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QRadioButton" name="radioButton">
+    <widget class="QCheckBox" name="checkBox">
      <property name="font">
       <font>
        <family>Comic Sans MS</family>
+       <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -46,20 +47,6 @@
      </property>
      <property name="checked">
       <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QRadioButton" name="radioButton_2">
-     <property name="font">
-      <font>
-       <family>Comic Sans MS</family>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Manual control</string>
      </property>
     </widget>
    </item>
