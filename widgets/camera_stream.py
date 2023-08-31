@@ -10,12 +10,17 @@ class CameraStream(QWidget):
         self.video_label = QLabel(self)
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(self.video_label)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
 
         self.video_capture = cv2.VideoCapture(0)  # 0 for default camera
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(30)  # Update every 30 milliseconds
+
+        self.setStyleSheet("background-color: white;")  # Устанавливаем белый фон
+
 
     def update_frame(self):
         ret, frame = self.video_capture.read()
@@ -25,7 +30,11 @@ class CameraStream(QWidget):
             h, w, ch = rgb_image.shape
             q_image = QImage(rgb_image.data, w, h, ch * w, QImage.Format_RGB888)
             pixmap = QPixmap.fromImage(q_image)
-            self.video_label.setPixmap(pixmap)
+
+            # Изменение способа масштабирования изображения
+            scaled_pixmap = pixmap.scaledToHeight(self.video_label.height())
+
+            self.video_label.setPixmap(scaled_pixmap)
             self.video_label.setAlignment(Qt.AlignCenter)
 
     def closeEvent(self, event):

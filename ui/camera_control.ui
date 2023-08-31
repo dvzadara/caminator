@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>318</width>
-    <height>405</height>
+    <width>302</width>
+    <height>395</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,8 +20,27 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QRadioButton" name="radioButton">
+     <property name="font">
+      <font>
+       <family>Comic Sans MS</family>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="text">
       <string>Auto control</string>
      </property>
@@ -32,6 +51,13 @@
    </item>
    <item>
     <widget class="QRadioButton" name="radioButton_2">
+     <property name="font">
+      <font>
+       <family>Comic Sans MS</family>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="text">
       <string>Manual control</string>
      </property>
@@ -110,7 +136,7 @@
            <string notr="true"/>
           </property>
           <property name="text">
-           <string>⇨</string>
+           <string>▶</string>
           </property>
          </widget>
         </item>
@@ -139,14 +165,14 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>48</pointsize>
+            <pointsize>32</pointsize>
            </font>
           </property>
           <property name="styleSheet">
            <string notr="true"/>
           </property>
           <property name="text">
-           <string>⇧</string>
+           <string>▲</string>
           </property>
          </widget>
         </item>
@@ -182,7 +208,7 @@
            <string notr="true"/>
           </property>
           <property name="text">
-           <string>⇦</string>
+           <string>◀</string>
           </property>
          </widget>
         </item>
@@ -211,14 +237,14 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>48</pointsize>
+            <pointsize>32</pointsize>
            </font>
           </property>
           <property name="styleSheet">
            <string notr="true"/>
           </property>
           <property name="text">
-           <string>⇩</string>
+           <string>▼</string>
           </property>
          </widget>
         </item>
