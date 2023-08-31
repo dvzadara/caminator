@@ -1,5 +1,4 @@
-from onnx_model.onnx_test import main
+from widgets.main_window import main
 
 if __name__ == "__main__":
     main()
-
