@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>325</width>
-    <height>350</height>
+    <width>318</width>
+    <height>405</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -41,8 +47,14 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>100</width>
-       <height>100</height>
+       <width>260</width>
+       <height>260</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>300</width>
+       <height>300</height>
       </size>
      </property>
      <property name="frameShape">
@@ -85,8 +97,8 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>16777215</width>
-            <height>16777215</height>
+            <width>80</width>
+            <height>80</height>
            </size>
           </property>
           <property name="font">
@@ -121,8 +133,8 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>16777215</width>
-            <height>16777215</height>
+            <width>80</width>
+            <height>80</height>
            </size>
           </property>
           <property name="font">
@@ -157,8 +169,8 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>16777215</width>
-            <height>16777215</height>
+            <width>80</width>
+            <height>80</height>
            </size>
           </property>
           <property name="font">
@@ -193,8 +205,8 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>16777215</width>
-            <height>16777215</height>
+            <width>80</width>
+            <height>80</height>
            </size>
           </property>
           <property name="font">

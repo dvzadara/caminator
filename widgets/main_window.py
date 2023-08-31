@@ -1,48 +1,34 @@
 import sys
-import cv2
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5 import QtWidgets
+from ui_to_py.main_window import Ui_MainWindow
+from widgets.camera_stream import CameraStream
+from widgets.control_panel import ControlPanel
 
-
-class VideoPlayer(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
 
-        self.setWindowTitle("Video Player")
-        self.setGeometry(100, 100, 800, 600)
+        desktop = QtWidgets.QDesktopWidget().availableGeometry()
+        desktop.setX(0)
+        desktop.setY(0)
+        self.setGeometry(desktop)
+        self.showMaximized()
 
-        self.central_widget = QWidget(self)
-        self.setCentralWidget(self.central_widget)
+        self.camera_stream = CameraStream()
+        self.ui.horizontalLayout.replaceWidget(self.ui.horizontalLayout.itemAt(0).widget(), self.camera_stream)
 
-        self.video_label = QLabel(self.central_widget)
-        self.layout = QVBoxLayout(self.central_widget)
-        self.layout.addWidget(self.video_label)
+        self.control_panel = ControlPanel()
+        self.ui.horizontalLayout.replaceWidget(self.ui.horizontalLayout.itemAt(1).widget(), self.control_panel)
 
-        self.video_capture = cv2.VideoCapture(0)  # 0 for default camera
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_frame)
-        self.timer.start(30)  # Update every 30 milliseconds
-
-    def update_frame(self):
-        ret, frame = self.video_capture.read()
-
-        if ret:
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = rgb_image.shape
-            q_image = QImage(rgb_image.data, w, h, ch * w, QImage.Format_RGB888)
-            pixmap = QPixmap.fromImage(q_image)
-            self.video_label.setPixmap(pixmap)
-            self.video_label.setAlignment(Qt.AlignCenter)
-
-    def closeEvent(self, event):
-        self.video_capture.release()
-        super().closeEvent(event)
 
 
 def main():
     app = QApplication(sys.argv)
-    player = VideoPlayer()
-    player.show()
+    main_window = MainWindow()
+    main_window.show()
     sys.exit(app.exec_())
+
