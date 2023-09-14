@@ -130,7 +130,7 @@ def xywh2xyxy(x):
     return y
 
 
-def detect_objects(image):
+def detect_objects_and_draw_boxes(image):
     start_time = datetime.now()
 
     image_height, image_width = image.shape[:2]
@@ -138,6 +138,7 @@ def detect_objects(image):
     boxes, scores, class_ids = predict(input_tensor, image_width, image_height)
     indices = nms(boxes, scores, 0.3)
     image_draw = image.copy()
+    object_list = []
     for (bbox, score, label) in zip(xywh2xyxy(boxes[indices]), scores[indices], class_ids[indices]):
         bbox = bbox.round().astype(np.int32).tolist()
         cls_id = int(label)
@@ -149,14 +150,14 @@ def detect_objects(image):
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.60, [225, 255, 255],
                     thickness=1)
+        object_list.append(str(cls))
 
     print("Time for frame:", (datetime.now() - start_time).microseconds / 1000000, "sec.")
-    return image_draw
+    return image_draw, object_list
 
 
 if __name__ == "__main__":
-
     image = cv2.imread(image_path)
-    image_draw = detect_objects(image)
+    image_draw = detect_objects_and_draw_boxes(image)
     cv2.imshow("label", image_draw)
     cv2.waitKey(0)

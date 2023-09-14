@@ -1,4 +1,4 @@
-from onnx_model.onnx_prediction import detect_objects
+from onnx_model.onnx_prediction import detect_objects_and_draw_boxes
 import cv2
 
 # model = YOLO('yolov8n.pt')
@@ -21,7 +21,7 @@ def main():
 
         # Отображение кадра в окне
         # frame = model.track(frame, show=True)
-        frame = detect_objects(frame)
+        frame = detect_objects_and_draw_boxes(frame)
         cv2.imshow("Camera Feed", frame)
 
         # Для выхода из цикла, нажмите клавишу 'q'

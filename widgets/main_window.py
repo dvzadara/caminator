@@ -28,6 +28,8 @@ class MainWindow(QMainWindow):
         self.control_panel = ControlPanel()
         self.ui.horizontalLayout.replaceWidget(self.ui.horizontalLayout.itemAt(1).widget(), self.control_panel)
 
+        self.camera_stream.register_observer(self.control_panel.object_list)
+
 
 def excepthook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))

@@ -9,6 +9,9 @@ readme = "README.md"
 python = "^3.8"
 pyqt5 = "^5.15.9"
 opencv-python = "^4.8.0.76"
+openvino-dev = "^2023.0.1"
+openvino = "^2023.0.1"
+ultralytics = "^8.0.167"
 
 
 [build-system]
