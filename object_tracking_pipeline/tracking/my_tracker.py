@@ -1,4 +1,4 @@
-from object_tracking_pipeline.tracking.sort.sort import Sort
+from object_tracking_pipeline.tracking.sort_algorithm.sort import Sort
 
 
 class MyTracker:
