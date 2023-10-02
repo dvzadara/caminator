@@ -4,8 +4,9 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
 from usefull_classes.observer import Observable
 # from onnx_model.onnx_prediction import detect_objects_and_draw_boxes
-from yolo_model.yolo_prediction import detect_objects_and_draw_boxes
-
+from object_tracking_pipeline.detection_models.yolo_model.yolo_prediction import *
+from object_tracking_pipeline.tracking.my_tracker import MyTracker
+from object_tracking_pipeline.drawing_results import *
 
 class CameraStream(QWidget, Observable):
     def __init__(self):
@@ -27,13 +28,18 @@ class CameraStream(QWidget, Observable):
         self.timer.start(30)  # Update every 30 milliseconds
 
         self.setStyleSheet("background-color: white;")  # Устанавливаем белый фон
-
+        self.tracker = MyTracker()
 
     def update_frame(self):
         ret, frame = self.video_capture.read()
 
         if ret:
-            frame, object_list = detect_objects_and_draw_boxes(frame)
+            results = run_model(frame)
+            detections = results2boxes_and_probs(results)
+            trackers = self.tracker.track_objects(detections)
+            frame = draw_boxes(frame, trackers)
+            frame = draw_tracks(frame, self.tracker)
+            object_list = list(map(lambda x: "human " + str(x), self.tracker.current_ids))
             self.notify_observers(object_list=object_list)
             rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb_image.shape

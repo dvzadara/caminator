@@ -12,7 +12,8 @@ opencv-python = "^4.8.0.76"
 openvino-dev = "^2023.0.1"
 openvino = "^2023.0.1"
 ultralytics = "^8.0.167"
-
+filterpy = "1.4.5"
+scikit-image = "0.17.2"
 
 [build-system]
 requires = ["poetry-core"]

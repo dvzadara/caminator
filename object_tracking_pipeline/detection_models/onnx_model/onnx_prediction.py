@@ -156,6 +156,44 @@ def detect_objects_and_draw_boxes(image):
     return image_draw, object_list
 
 
+def detect_objects(image):
+    start_time = datetime.now()
+
+    image_height, image_width = image.shape[:2]
+    input_tensor = image_to_input_tensor(image)
+    boxes, scores, class_ids = predict(input_tensor, image_width, image_height)
+    indices = nms(boxes, scores, 0.3)
+    detections = []
+    for (bbox, score, label) in zip(xywh2xyxy(boxes[indices]), scores[indices], class_ids[indices]):
+        x_min, y_min, x_max, y_max = list(bbox)
+        confidence = score
+        detections.append([int(x_min), int(y_min), int(x_max), int(y_max), float(confidence)])
+    detections = np.array(detections)
+    return detections
+
+
+def run_model(image):
+    start_time = datetime.now()
+
+    image_height, image_width = image.shape[:2]
+    input_tensor = image_to_input_tensor(image)
+    boxes, scores, class_ids = predict(input_tensor, image_width, image_height)
+    model_results = [boxes, scores, class_ids]
+    return model_results
+
+
+def results2boxes_and_probs(model_results):
+    boxes, scores, class_ids = model_results
+    indices = nms(boxes, scores, 0.3)
+    detections = []
+    for (bbox, score, label) in zip(xywh2xyxy(boxes[indices]), scores[indices], class_ids[indices]):
+        x_min, y_min, x_max, y_max = list(bbox)
+        confidence = score
+        detections.append([int(x_min), int(y_min), int(x_max), int(y_max), float(confidence)])
+    detections = np.array(detections)
+    return detections
+
+
 if __name__ == "__main__":
     image = cv2.imread(image_path)
     image_draw = detect_objects_and_draw_boxes(image)

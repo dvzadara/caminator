@@ -1,4 +1,4 @@
-from onnx_model.onnx_prediction import detect_objects_and_draw_boxes
+from object_tracking_pipeline.detection_models.onnx_model.onnx_prediction import detect_objects_and_draw_boxes
 import cv2
 
 # model = YOLO('yolov8n.pt')
