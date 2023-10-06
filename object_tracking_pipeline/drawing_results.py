@@ -33,3 +33,16 @@ def draw_tracks(image, my_tracker, last_frames=50):
             color = colors[id % 10]
             cv2.polylines(image_draw, np.int32([track_history]), isClosed=False, color=color, thickness=2)
     return image_draw
+
+
+def draw_box(image, box, id):
+    image_draw = image.copy()
+    bbox = np.array(box).astype(int)
+    color = colors[id % 10]
+    cv2.rectangle(image_draw, tuple(bbox[:2]), tuple(bbox[2:]), color, 2)
+    cv2.putText(image_draw,
+                f'HUMAN, id={int(id)}', (bbox[0], bbox[1] - 2),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.60, [225, 255, 255],
+                thickness=1)
+    return image_draw
