@@ -1,9 +1,13 @@
 import cv2
 import numpy as np
+import torchvision
+from ultralytics.utils.ops import non_max_suppression
 from PIL import Image
 import onnxruntime as rt
 from datetime import datetime
 import time
+from torch import tensor
+
 
 def load_model(model_path=r"weights/yolov8n.onnx_model"):
     # EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
@@ -14,6 +18,9 @@ def load_model(model_path=r"weights/yolov8n.onnx_model"):
 
 
 def get_model_params(ort_session):
+    """
+    Returns input_shape, input_names, output_names from ort_session
+    """
     model_inputs = ort_session.get_inputs()
     input_names = [model_inputs[i].name for i in range(len(model_inputs))]
     input_shape = model_inputs[0].shape
@@ -30,6 +37,9 @@ input_shape, input_names, output_names = get_model_params(ort_session)
 
 
 def image_to_input_tensor(image):
+    """
+    Transforms opencv image to format for oonx model
+    """
     Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -43,9 +53,16 @@ def image_to_input_tensor(image):
 
 
 def predict(input_tensor, image_width, image_height):
+    """
+    Uses onnx model for prediction.
+    Returns:
+    boxes - np.array, shape=(n, 4) every box is [x_center, y_center, width, height],
+    scores - np.array, shape=(n) floats between 0 and 1,
+    class_ids - np.array, shape=(n).
+    """
     outputs = ort_session.run(output_names, {input_names[0]: input_tensor})[0]
     predictions = np.squeeze(outputs).T
-    conf_thresold = 0.8
+    conf_thresold = 0.3
     # Filter out object confidence scores below threshold
     scores = np.max(predictions[:, 4:], axis=1)
     predictions = predictions[scores > conf_thresold, :]
@@ -64,6 +81,11 @@ def predict(input_tensor, image_width, image_height):
 
 
 def nms(boxes, scores, iou_threshold):
+    """
+    Non maximum supression. Takes boxes(x_min, y_min, x_max, y_max) np.array with shape (n, 4),
+    scores(floats between 0 and 1) np.array with shape (n),
+    iou_threshold float between 0 and 1
+    """
     # Sort by score
     sorted_indices = np.argsort(scores)[::-1]
 
@@ -130,51 +152,10 @@ def xywh2xyxy(x):
     return y
 
 
-def detect_objects_and_draw_boxes(image):
-    start_time = datetime.now()
-
-    image_height, image_width = image.shape[:2]
-    input_tensor = image_to_input_tensor(image)
-    boxes, scores, class_ids = predict(input_tensor, image_width, image_height)
-    indices = nms(boxes, scores, 0.3)
-    image_draw = image.copy()
-    object_list = []
-    for (bbox, score, label) in zip(xywh2xyxy(boxes[indices]), scores[indices], class_ids[indices]):
-        bbox = bbox.round().astype(np.int32).tolist()
-        cls_id = int(label)
-        cls = CLASSES[cls_id]
-        color = (0, 255, 0)
-        cv2.rectangle(image_draw, tuple(bbox[:2]), tuple(bbox[2:]), color, 2)
-        cv2.putText(image_draw,
-                    f'{cls}:{int(score * 100)}', (bbox[0], bbox[1] - 2),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.60, [225, 255, 255],
-                    thickness=1)
-        object_list.append(str(cls))
-
-    print("Time for frame:", (datetime.now() - start_time).microseconds / 1000000, "sec.")
-    return image_draw, object_list
-
-
-def detect_objects(image):
-    start_time = datetime.now()
-
-    image_height, image_width = image.shape[:2]
-    input_tensor = image_to_input_tensor(image)
-    boxes, scores, class_ids = predict(input_tensor, image_width, image_height)
-    indices = nms(boxes, scores, 0.3)
-    detections = []
-    for (bbox, score, label) in zip(xywh2xyxy(boxes[indices]), scores[indices], class_ids[indices]):
-        x_min, y_min, x_max, y_max = list(bbox)
-        confidence = score
-        detections.append([int(x_min), int(y_min), int(x_max), int(y_max), float(confidence)])
-    detections = np.array(detections)
-    return detections
-
-
 def run_model(image):
-    start_time = datetime.now()
-
+    """
+    Process image and return model results with boxes, scores, class_ids
+    """
     image_height, image_width = image.shape[:2]
     input_tensor = image_to_input_tensor(image)
     boxes, scores, class_ids = predict(input_tensor, image_width, image_height)
@@ -183,19 +164,21 @@ def run_model(image):
 
 
 def results2boxes_and_probs(model_results):
+    """
+    Convert result of function run_model to format [[x_min, y_min, x_max, y_max, score], ...]
+    """
     boxes, scores, class_ids = model_results
-    indices = nms(boxes, scores, 0.3)
+    # boxes_and_scores = non_max_suppression(tensor(model_results), 0.3)
+    # boxes = boxes_and_scores[:, :4]
+    # scores = boxes_and_scores[:, 4]
+    # class_ids = boxes_and_scores[:, 5]
+    boxes = xywh2xyxy(boxes)
+    i = torchvision.ops.nms(tensor(boxes.astype(float)), tensor(scores.astype(float)), 0.1)  # NMS
     detections = []
-    for (bbox, score, label) in zip(xywh2xyxy(boxes[indices]), scores[indices], class_ids[indices]):
+    i = [i] if len(i) == 1 else i
+    for (bbox, score, label) in zip(boxes[i], scores[i], class_ids[i]):
         x_min, y_min, x_max, y_max = list(bbox)
         confidence = score
         detections.append([int(x_min), int(y_min), int(x_max), int(y_max), float(confidence)])
     detections = np.array(detections)
     return detections
-
-
-if __name__ == "__main__":
-    image = cv2.imread(image_path)
-    image_draw = detect_objects_and_draw_boxes(image)
-    cv2.imshow("label", image_draw)
-    cv2.waitKey(0)

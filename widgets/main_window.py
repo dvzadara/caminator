@@ -9,6 +9,9 @@ import traceback
 
 
 class MainWindow(QMainWindow):
+    """
+    Main window widget contains camera stream widget and control panel widget.
+    """
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()

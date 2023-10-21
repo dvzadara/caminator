@@ -5,6 +5,9 @@ from usefull_classes.observer import Observer
 
 
 class ObjectList(QWidget, Observer):
+    """
+    Object list widget displays the list of detected objects and observes camera stream for updating.
+    """
     def __init__(self):
         super().__init__()
         self.ui = Ui_Form()
@@ -13,6 +16,9 @@ class ObjectList(QWidget, Observer):
         self.ui.listView.setModel(self.model)
 
     def update_object_list(self, object_list):
+        """
+        Update the objects in the widget using new object_list.
+        """
         self.model.clear()
         for i in range(len(object_list)):
             item = QStandardItem(object_list[i])

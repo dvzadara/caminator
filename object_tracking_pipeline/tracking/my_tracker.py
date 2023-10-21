@@ -2,6 +2,9 @@ from object_tracking_pipeline.tracking.sort_algorithm.sort import Sort
 
 
 class MyTracker:
+    """
+    Class for containing tracks data.
+    """
     def __init__(self):
         self.tracker = Sort()
         self.ids = []
@@ -10,6 +13,9 @@ class MyTracker:
         self.frame_number = 0
 
     def track_objects(self, detections):
+        """
+        Updates tracks data with new frame.
+        """
         if len(detections) != 0:
             trackers = self.tracker.update(detections)
         else:

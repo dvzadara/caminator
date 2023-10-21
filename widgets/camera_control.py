@@ -3,6 +3,9 @@ from ui_to_py.camera_control import Ui_Form
 
 
 class CameraControl(QWidget):
+    """
+    Camera control widget contains buttons for camera control.
+    """
     def __init__(self):
         super().__init__()
         self.ui = Ui_Form()

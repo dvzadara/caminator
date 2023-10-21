@@ -1,3 +1,5 @@
+# Observer pattern classes.
+
 class Observable:
     def __init__(self):
         self._observers = []
@@ -12,9 +14,7 @@ class Observable:
 
 class Observer:
     def __init__(self):
-        # observable.register_observer(self)
         pass
 
     def notify(self, observable, *args, **kwargs):
         print("Got", args, kwargs, "From", observable)
-

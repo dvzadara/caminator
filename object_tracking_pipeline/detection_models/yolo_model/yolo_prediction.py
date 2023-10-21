@@ -5,11 +5,17 @@ model = YOLO('weights/best.pt')
 
 
 def run_model(image):
+    """
+    Process image and return model results with boxes, scores, class_ids
+    """
     model_results = model([image])[0]
     return model_results
 
 
 def results2boxes_and_probs(model_results):
+    """
+    Convert result of function run_model to format [[x_min, y_min, x_max, y_max, score], ...]
+    """
     boxes = model_results.boxes
     detections = []
     for i in range(len(boxes)):

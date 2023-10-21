@@ -3,12 +3,18 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
 from usefull_classes.observer import Observable
-# from onnx_model.onnx_prediction import detect_objects_and_draw_boxes
-from object_tracking_pipeline.detection_models.yolo_model.yolo_prediction import *
+from object_tracking_pipeline.detection_models.onnx_model.onnx_prediction import *
+# from object_tracking_pipeline.detection_models.yolo_model.yolo_prediction import *
 from object_tracking_pipeline.tracking.my_tracker import MyTracker
 from object_tracking_pipeline.drawing_results import *
+import datetime
+
 
 class CameraStream(QWidget, Observable):
+    """
+    Camera stream widget must process the camera stream and display the results in the main window.
+    Also notifies the object list widget`s observer every frame.
+    """
     def __init__(self):
         super().__init__()
         self.video_label = QLabel(self)
@@ -31,12 +37,18 @@ class CameraStream(QWidget, Observable):
         self.tracker = MyTracker()
 
     def update_frame(self):
+        """
+        Function read frame from the camera, use model(object_tracking_pipeline package) for prediction,
+        notify observers and displaying the image.
+        """
         ret, frame = self.video_capture.read()
-
         if ret:
+            now_time = datetime.datetime.now()
             results = run_model(frame)
             detections = results2boxes_and_probs(results)
             trackers = self.tracker.track_objects(detections)
+            time_delta = datetime.datetime.now() - now_time
+            print(f"Frame process time: {time_delta.total_seconds()}")
             frame = draw_boxes(frame, trackers)
             frame = draw_tracks(frame, self.tracker)
             object_list = list(map(lambda x: "human " + str(x), self.tracker.current_ids))

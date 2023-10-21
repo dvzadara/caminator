@@ -5,6 +5,10 @@ from widgets.camera_control import CameraControl
 
 
 class ControlPanel(QWidget):
+    """
+    The control panel widget is responsible for controlling the camera, contains a camera control widget for manual
+    control and object list widget for automatically tracking an object from the object list.
+    """
     def __init__(self):
         super().__init__()
         self.ui = Ui_Form()
