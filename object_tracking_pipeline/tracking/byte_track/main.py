@@ -1,9 +1,11 @@
 import cv2
+import torchvision
 
 from PIL import Image
 import numpy as np
 from torch import tensor
 from byte_tracker import BYTETracker
+from object_tracking_pipeline.boxes_converters import tlwh2xyxy, xywh2xyxy
 from object_tracking_pipeline.drawing_results import draw_box
 from ultralytics import YOLO
 import onnxruntime as rt
@@ -17,13 +19,6 @@ class ByteTrackArgument:
     min_box_area = 1.0 # Minimum bounding box area
     mot20 = False # If used, bounding boxes are not clipped.
 
-def tlwh_to_xyxy(tlwh):
-    x1 = tlwh[0]
-    y1 = tlwh[1]
-    x2 = tlwh[0] + tlwh[2]
-    y2 = tlwh[1] + tlwh[3]
-    return (x1, y1, x2, y2)
-
 
 def image_to_input_tensor(image):
     Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
@@ -35,6 +30,33 @@ def image_to_input_tensor(image):
     input_image = input_image.transpose(2, 0, 1)
     input_tensor = input_image[np.newaxis, :, :, :].astype(np.float32)
     return input_tensor
+
+
+def predict(input_tensor, image_width, image_height, conf_thresold=0.3):
+    """
+    Uses onnx model for prediction.
+    Returns:
+    boxes - np.array, shape=(n, 4) every box is [x_center, y_center, width, height],
+    scores - np.array, shape=(n) floats between 0 and 1,
+    class_ids - np.array, shape=(n).
+    """
+    outputs = ort_session.run(output_names, {input_names[0]: input_tensor})[0]
+    predictions = np.squeeze(outputs).T
+    # Filter out object confidence scores below threshold
+    scores = np.max(predictions[:, 4:], axis=1)
+    predictions = predictions[scores > conf_thresold, :]
+    scores = scores[scores > conf_thresold]
+
+    class_ids = np.argmax(predictions[:, 4:], axis=1)
+
+    # Get bounding boxes for each object
+    boxes = predictions[:, :4]
+
+    input_shape = np.array([input_width, input_height, input_width, input_height])
+    boxes = np.divide(boxes, input_shape, dtype=np.float32)
+    boxes *= np.array([image_width, image_height, image_width, image_height])
+    boxes = boxes.astype(np.int32)
+    return boxes, scores, class_ids
 
 
 input_width, input_height = (640, 640)
@@ -54,23 +76,31 @@ img_size = (1280, 720)
 
 while True:
     ret, frame = video_capture.read()
+    img_height, img_width = img_size
     if ret:
         # outputs = model.predict(source=frame, conf=MIN_THRESHOLD)
+        # outputs = outputs[0].boxes.data
+        # class_outputs = outputs[outputs[:, 5] == 0][:,:5]
         model_inputs = ort_session.get_inputs()
         input_names = [model_inputs[i].name for i in range(len(model_inputs))]
         input_shape = model_inputs[0].shape
         model_output = ort_session.get_outputs()
         output_names = [model_output[i].name for i in range(len(model_output))]
         input_tensor = image_to_input_tensor(frame)
-        outputs = ort_session.run(output_names, {input_names[0]: input_tensor})[0]
-        outputs = np.squeeze(outputs).T
+        boxes, scores, class_ids = predict(input_tensor, img_height, img_width, MIN_THRESHOLD)
 
-        img_height, img_width = img_size
-        print(outputs.shape)
-        # outputs = outputs[0].boxes.data
-        # class_outputs = outputs[outputs[:, 5] == 0][:,:5]
+        # outputs = ort_session.run(output_names, {input_names[0]: input_tensor})[0]
+        # outputs = np.squeeze(outputs).T
+        # i = outputs[:, 4:].max(axis=1) > MIN_THRESHOLD
+        # outputs[:, 4:] = np.expand_dims(outputs[:, 4:].max(axis=1), axis=1)
+        # outputs = outputs[:, :5]
+        # outputs = outputs[i]
+        boxes = xywh2xyxy(boxes)
+        outputs = np.column_stack([boxes, scores])
+        i = torchvision.ops.nms(tensor(boxes.astype(float)), tensor(scores.astype(float)), 0.1)
+        outputs = outputs[i]
         if outputs is not None:
-            online_targets = tracker.update(tensor(outputs), img_size, img_size)
+            online_targets = tracker.update(tensor(outputs))
             # online_targets = tracker.update(class_outputs.cpu(), img_size, img_size)
             online_tlwhs = []
             online_ids = []
@@ -84,7 +114,8 @@ while True:
                     online_tlwhs.append(tlwh)
                     online_ids.append(tid)
                     online_scores.append(t.score)
-                    box = tlwh_to_xyxy(tlwh)
+                    box = tlwh2xyxy(tlwh)
+                    # frame = draw_box(frame, tlwh, tid)
                     frame = draw_box(frame, box, tid)
 
         cv2.imshow("...", frame)

@@ -8,6 +8,8 @@ from datetime import datetime
 import time
 from torch import tensor
 
+from object_tracking_pipeline.boxes_converters import xywh2xyxy
+
 
 def load_model(model_path=r"weights/yolov8n.onnx_model"):
     # EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
@@ -52,7 +54,7 @@ def image_to_input_tensor(image):
     return input_tensor
 
 
-def predict(input_tensor, image_width, image_height):
+def predict(input_tensor, image_width, image_height, conf_thresold=0.3):
     """
     Uses onnx model for prediction.
     Returns:
@@ -62,7 +64,6 @@ def predict(input_tensor, image_width, image_height):
     """
     outputs = ort_session.run(output_names, {input_names[0]: input_tensor})[0]
     predictions = np.squeeze(outputs).T
-    conf_thresold = 0.3
     # Filter out object confidence scores below threshold
     scores = np.max(predictions[:, 4:], axis=1)
     predictions = predictions[scores > conf_thresold, :]
@@ -142,23 +143,13 @@ CLASSES = [
 ]
 
 
-def xywh2xyxy(x):
-    # Convert bounding box (x, y, w, h) to bounding box (x1, y1, x2, y2)
-    y = np.copy(x)
-    y[..., 0] = x[..., 0] - x[..., 2] / 2
-    y[..., 1] = x[..., 1] - x[..., 3] / 2
-    y[..., 2] = x[..., 0] + x[..., 2] / 2
-    y[..., 3] = x[..., 1] + x[..., 3] / 2
-    return y
-
-
-def run_model(image):
+def run_model(image, conf_thresold=0.3):
     """
     Process image and return model results with boxes, scores, class_ids
     """
     image_height, image_width = image.shape[:2]
     input_tensor = image_to_input_tensor(image)
-    boxes, scores, class_ids = predict(input_tensor, image_width, image_height)
+    boxes, scores, class_ids = predict(input_tensor, image_width, image_height, conf_thresold)
     model_results = [boxes, scores, class_ids]
     return model_results
 

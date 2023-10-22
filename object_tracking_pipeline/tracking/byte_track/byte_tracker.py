@@ -1,13 +1,14 @@
 import numpy as np
 
-from kalman_filter import KalmanFilter
-import matching
-from basetrack import BaseTrack, TrackState
+from .kalman_filter import KalmanFilter
+from . import matching
+from .basetrack import BaseTrack, TrackState
+
 
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()
-    def __init__(self, tlwh, score):
 
+    def __init__(self, tlwh, score):
         # wait activate
         self._tlwh = np.asarray(tlwh, dtype=np.float)
         self.kalman_filter = None
@@ -144,13 +145,14 @@ class BYTETracker(object):
 
         self.frame_id = 0
         self.args = args
-        #self.det_thresh = args.track_thresh
+        # self.det_thresh = args.track_thresh
         self.det_thresh = args.track_thresh + 0.1
         self.buffer_size = int(frame_rate / 30.0 * args.track_buffer)
         self.max_time_lost = self.buffer_size
         self.kalman_filter = KalmanFilter()
 
-    def update(self, output_results, img_info, img_size):
+    # def update(self, output_results, img_info, img_size):
+    def update(self, output_results):
         self.frame_id += 1
         activated_starcks = []
         refind_stracks = []
@@ -164,8 +166,8 @@ class BYTETracker(object):
             output_results = output_results.cpu().numpy()
             scores = output_results[:, 4] * output_results[:, 5]
             bboxes = output_results[:, :4]  # x1y1x2y2
-        img_h, img_w = img_info[0], img_info[1]
-        scale = min(img_size[0] / float(img_h), img_size[1] / float(img_w))
+        # img_h, img_w = img_info[0], img_info[1]
+        # scale = min(img_size[0] / float(img_h), img_size[1] / float(img_w))
         # bboxes /= scale
 
         remain_inds = scores > self.args.track_thresh
@@ -218,7 +220,7 @@ class BYTETracker(object):
         if len(dets_second) > 0:
             '''Detections'''
             detections_second = [STrack(STrack.tlbr_to_tlwh(tlbr), s) for
-                          (tlbr, s) in zip(dets_second, scores_second)]
+                                 (tlbr, s) in zip(dets_second, scores_second)]
         else:
             detections_second = []
         r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state == TrackState.Tracked]

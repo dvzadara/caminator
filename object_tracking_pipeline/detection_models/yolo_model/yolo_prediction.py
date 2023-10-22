@@ -4,11 +4,11 @@ import cv2
 model = YOLO('weights/best.pt')
 
 
-def run_model(image):
+def run_model(image, conf_thresold=0.3):
     """
     Process image and return model results with boxes, scores, class_ids
     """
-    model_results = model([image])[0]
+    model_results = model([image], conf=conf_thresold)[0]
     return model_results
 
 

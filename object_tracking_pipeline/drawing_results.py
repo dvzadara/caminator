@@ -6,11 +6,10 @@ import numpy as np
 colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for x in range(10)]
 
 
-def draw_boxes(image, trackers):
+def draw_boxes(image, my_tracker):
     image_draw = image.copy()
-    for tracker in trackers:
-        bbox = tracker[:4].astype(int)
-        id = int(tracker[4])
+    for id in my_tracker.current_ids:
+        bbox = my_tracker.box_history[id][-1].astype(int)
         color = colors[id % 10]
         cv2.rectangle(image_draw, tuple(bbox[:2]), tuple(bbox[2:]), color, 2)
         cv2.putText(image_draw,

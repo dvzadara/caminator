@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
 from usefull_classes.observer import Observable
 from object_tracking_pipeline.detection_models.onnx_model.onnx_prediction import *
 # from object_tracking_pipeline.detection_models.yolo_model.yolo_prediction import *
-from object_tracking_pipeline.tracking.my_tracker import MyTracker
+from object_tracking_pipeline.tracking.my_tracker import *
 from object_tracking_pipeline.drawing_results import *
 import datetime
 
@@ -34,7 +34,7 @@ class CameraStream(QWidget, Observable):
         self.timer.start(30)  # Update every 30 milliseconds
 
         self.setStyleSheet("background-color: white;")  # Устанавливаем белый фон
-        self.tracker = MyTracker()
+        self.tracker = MyTracker(byte_tracker_type)
 
     def update_frame(self):
         """
@@ -46,10 +46,10 @@ class CameraStream(QWidget, Observable):
             now_time = datetime.datetime.now()
             results = run_model(frame)
             detections = results2boxes_and_probs(results)
-            trackers = self.tracker.track_objects(detections)
+            self.tracker.track_objects(detections)
             time_delta = datetime.datetime.now() - now_time
             print(f"Frame process time: {time_delta.total_seconds()}")
-            frame = draw_boxes(frame, trackers)
+            frame = draw_boxes(frame, self.tracker)
             frame = draw_tracks(frame, self.tracker)
             object_list = list(map(lambda x: "human " + str(x), self.tracker.current_ids))
             self.notify_observers(object_list=object_list)
